@@ -85,6 +85,7 @@ export default function NavigatePage() {
   // ── Loading screen ──────────────────────────────────────
   if (loading) {
     return (
+      <div className="page-wrapper">
       <main style={{
         minHeight: '100vh',
         background: '#0d1117',
@@ -100,6 +101,7 @@ export default function NavigatePage() {
           Getting your location...
         </p>
       </main>
+      </div>
     )
   }
 
@@ -123,6 +125,11 @@ export default function NavigatePage() {
   // ── Routes screen ───────────────────────────────────────
   if (screen === 'routes') {
     return (
+      <div className="page-wrapper">
+      <div className="blob-wrapper">
+        <div className="blob blob-1" />
+        <div className="blob blob-2" />
+      </div>
       <main style={{
         minHeight: '100vh',
         background: '#0d1117',
@@ -170,13 +177,18 @@ export default function NavigatePage() {
           />
         ))}
       </main>
+      </div>
     )
   }
 
   // ── Search screen (default) ─────────────────────────────
   return (
   <div className="page-wrapper">
-    <main className="page">
+     <div className="blob-wrapper">
+      <div className="blob blob-1" />
+      <div className="blob blob-2" />
+    </div>
+    <main className="page content">
 
       {/* Header */}
       <h1 style={{

@@ -79,3 +79,97 @@ body {
   display: flex;
   justify-content: center;
 }
+
+.blob-wrapper {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.5;
+}
+
+.blob-1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #f59e0b33, transparent);
+  top: -150px;
+  right: -100px;
+  animation: drift1 12s ease-in-out infinite;
+}
+
+.blob-2 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, #6366f133, transparent);
+  bottom: -100px;
+  left: -80px;
+  animation: drift2 15s ease-in-out infinite;
+}
+
+@keyframes drift1 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(30px, -40px); }
+}
+
+@keyframes drift2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-20px, 30px); }
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.route-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.route-card:hover {
+  transform: translateY(-2px);
+}
+
+.route-card.selected {
+  border-color: var(--amber);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-amber {
+  background: rgba(245,158,11,0.1);
+  color: var(--amber);
+  border: 1px solid rgba(245,158,11,0.3);
+}
+
+.badge-green {
+  background: rgba(74,222,128,0.1);
+  color: var(--green);
+  border: 1px solid rgba(74,222,128,0.3);
+}
+
+.badge-muted {
+  background: var(--bg);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}

@@ -93,18 +93,10 @@ export function RouteCard({ route, onSelect, selected }: RouteCardProps) {
   const color = routeColor(route.type)
 
   return (
-    <div
-      onClick={() => onSelect(route)}
-      style={{
-        background: '#161b22',
-        border: `2px solid ${selected ? color : '#30363d'}`,
-        borderRadius: 16,
-        padding: '18px',
-        cursor: 'pointer',
-        transition: 'border-color 0.15s',
-        marginBottom: 12,
-      }}
-    >
+ <div
+  onClick={() => onSelect(route)}
+  className={`route-card ${selected ? 'selected' : ''}`}
+>
       {/* Card header */}
       <div style={{
         display: 'flex',
