@@ -1,5 +1,6 @@
 import Axios from 'axios'
 import { IntentRequest, IntentResponse } from '../../types/api/ai'
+import { geocode } from '../location/geocoding'
 
 export async function understandIntent(
   request: IntentRequest
@@ -43,10 +44,13 @@ Rules:
 `
 
   try {
+    
+     
+
     const response = await Axios.post(
       'https://api.groq.com/openai/v1/chat/completions',
       {
-        model: 'llama3-8b-8192',
+        model: 'llama-3.1-8b-instant',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.1,
       },
@@ -61,14 +65,18 @@ Rules:
     const raw = response.data.choices[0].message.content
     const parsed = JSON.parse(raw)
 
-    return {
-      destinationQuery: parsed.destinationQuery,
-      destinationCoords: parsed.destinationCoords,
-      confidence: parsed.confidence ?? 'high',
-      clarificationNeeded: parsed.clarificationNeeded ?? false,
-      clarificationQuestion: parsed.clarificationQuestion ?? undefined,
-      detectedLanguage: parsed.detectedLanguage ?? 'en',
-    }
+ const realCoords = await geocode(parsed.destinationQuery)
+ console.log('Nominatim coords:', realCoords)
+console.log('Destination query:', parsed.destinationQuery)
+
+return {
+  destinationQuery: parsed.destinationQuery,
+  destinationCoords: realCoords ?? parsed.destinationCoords,
+  confidence: parsed.confidence ?? 'high',
+  clarificationNeeded: parsed.clarificationNeeded ?? false,
+  clarificationQuestion: parsed.clarificationQuestion ?? undefined,
+  detectedLanguage: parsed.detectedLanguage ?? 'en',
+}
 
   } catch (err) {
     console.error('Groq error:', err)

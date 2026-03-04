@@ -218,9 +218,9 @@ export default function NavigatePage() {
           borderRadius: '50%',
           background: coordinates ? 'var(--green)' : 'var(--red)',
         }} />
-        <span className="muted">
-          {coordinates ? 'Location found' : error ?? 'No location'}
-        </span>
+       <span className="muted">
+  {coordinates ? 'Location found' : error ?? 'No location'}
+</span>
       </div>
 
       {/* Big CTA text */}
