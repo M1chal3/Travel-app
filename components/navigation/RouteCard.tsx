@@ -1,30 +1,10 @@
 'use client'
 
 import { RouteOption, Step, TransportMode } from '../../types/core/journey'
+import { modeIcon, formatDuration } from '../../lib/utils/transport'
 
-// Maps transport mode to an emoji
-function modeIcon(mode: TransportMode): string {
-  const icons: Record<TransportMode, string> = {
-    walking: '🚶',
-    tram: '🚃',
-    metro: '🚇',
-    bus: '🚌',
-    train: '🚆',
-    taxi: '🚖',
-    ferry: '⛴️',
-  }
-  return icons[mode] ?? '🚶'
-}
 
-// Converts seconds to readable string
-// 1140 → "19 min"
-function formatDuration(seconds: number): string {
-  const mins = Math.round(seconds / 60)
-  if (mins < 60) return `${mins} min`
-  const hrs = Math.floor(mins / 60)
-  const remaining = mins % 60
-  return `${hrs}h ${remaining}min`
-}
+
 
 // A single step row inside the card
 function StepRow({ step }: { step: Step }) {

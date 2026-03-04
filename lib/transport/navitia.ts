@@ -2,6 +2,36 @@ import axios from 'axios'
 import { Coordinates } from '../../types/core/location'
 import { RouteOption, Step } from '../../types/core/journey'
 
+// OSRM response types
+interface OsrmManeuver {
+  type: string
+  modifier?: string
+}
+
+interface OsrmStep {
+  maneuver: OsrmManeuver
+  name: string
+  distance: number
+  duration: number
+}
+
+interface OsrmLeg {
+  steps: OsrmStep[]
+  duration: number
+  distance: number
+}
+
+interface OsrmRoute {
+  legs: OsrmLeg[]
+  duration: number
+  distance: number
+}
+
+interface OsrmResponse {
+  routes: OsrmRoute[]
+  code: string
+}
+
 export async function getRoutesFromNavitia(
   origin: Coordinates,
   destination: Coordinates
@@ -17,7 +47,7 @@ export async function getRoutesFromNavitia(
       }
     )
 
-    const data = response.data
+    const data = response.data as OsrmResponse
 
     if (!data.routes || data.routes.length === 0) {
       return null
@@ -27,7 +57,7 @@ export async function getRoutesFromNavitia(
     const leg = route.legs[0]
 
     // Convert OSRM steps into our Step format
-    const steps: Step[] = leg.steps.map((s: any, i: number) => ({
+    const steps: Step[] = leg.steps.map((s: OsrmStep, i: number) => ({
       id: String(i),
       type: 'walking' as const,
       instruction: s.maneuver?.type === 'arrive'
@@ -74,7 +104,7 @@ export async function getRoutesFromNavitia(
   }
 }
 
-function formatOsrmInstruction(step: any): string {
+function formatOsrmInstruction(step: OsrmStep): string {
   const type = step.maneuver?.type
   const modifier = step.maneuver?.modifier
   const name = step.name || 'the road'

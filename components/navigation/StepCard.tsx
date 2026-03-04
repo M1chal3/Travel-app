@@ -1,27 +1,7 @@
 'use client'
 
 import { Step, TransportMode } from '../../types/core/journey'
-
-function modeIcon(mode: TransportMode): string {
-  const icons: Record<TransportMode, string> = {
-    walking: '🚶',
-    tram: '🚃',
-    metro: '🚇',
-    bus: '🚌',
-    train: '🚆',
-    taxi: '🚖',
-    ferry: '⛴️',
-  }
-  return icons[mode] ?? '🚶'
-}
-
-function formatDuration(seconds: number): string {
-  const mins = Math.round(seconds / 60)
-  if (mins < 60) return `${mins} min`
-  const hrs = Math.floor(mins / 60)
-  const remaining = mins % 60
-  return `${hrs}h ${remaining}min`
-}
+import { modeIcon, formatDuration } from '../../lib/utils/transport'
 
 interface StepCardProps {
   step: Step

@@ -44,8 +44,9 @@ export default function NavigatePage() {
       setScreen('routes')
 
     } catch (err) {
-      console.error('Search failed:', err)
-    } finally {
+  console.error('Search failed:', err)
+  alert('Something went wrong. Please try again.')
+} finally {
       setSearching(false)
     }
   }
@@ -174,23 +175,18 @@ export default function NavigatePage() {
 
   // ── Search screen (default) ─────────────────────────────
   return (
-    <main style={{
-      minHeight: '100vh',
-      background: '#0d1117',
-      fontFamily: 'system-ui, sans-serif',
-      padding: '48px 24px',
-      maxWidth: 480,
-      margin: '0 auto',
-    }}>
+  <div className="page-wrapper">
+    <main className="page">
+
       {/* Header */}
       <h1 style={{
         fontSize: 36,
         fontWeight: 800,
-        color: '#f0f2ff',
+        color: 'var(--text)',
         marginBottom: 8,
         letterSpacing: '-0.5px',
       }}>
-        way<span style={{ color: '#f59e0b', fontStyle: 'italic' }}>far</span>
+        way<span style={{ color: 'var(--amber)', fontStyle: 'italic' }}>far</span>
       </h1>
 
       {/* Location pill */}
@@ -198,8 +194,8 @@ export default function NavigatePage() {
         display: 'inline-flex',
         alignItems: 'center',
         gap: 6,
-        background: '#161b22',
-        border: '1px solid #30363d',
+        background: 'var(--card)',
+        border: '1px solid var(--border)',
         borderRadius: 20,
         padding: '6px 14px',
         marginBottom: 32,
@@ -208,28 +204,39 @@ export default function NavigatePage() {
           width: 7,
           height: 7,
           borderRadius: '50%',
-          background: coordinates ? '#4ade80' : '#ef4444',
+          background: coordinates ? 'var(--green)' : 'var(--red)',
         }} />
-        <span style={{ color: '#8b949e', fontSize: 13 }}>
-          {coordinates
-            ? 'Location found'
-            : error ?? 'No location'}
+        <span className="muted">
+          {coordinates ? 'Location found' : error ?? 'No location'}
         </span>
       </div>
+
+      {/* Big CTA text */}
+      <p style={{
+        fontSize: 28,
+        fontWeight: 800,
+        color: 'var(--text)',
+        lineHeight: 1.2,
+        marginBottom: 24,
+        letterSpacing: '-0.3px',
+      }}>
+        Where do you<br />
+        need to <span style={{ color: 'var(--amber)', fontStyle: 'italic' }}>be?</span>
+      </p>
 
       {/* Input */}
       <textarea
         value={query}
         onChange={e => setQuery(e.target.value)}
-        placeholder="Where do you need to go? Type anything..."
+        placeholder="Type anything, any language..."
         rows={3}
         style={{
           width: '100%',
-          background: '#161b22',
-          border: `1.5px solid ${query.trim() ? '#f59e0b' : '#30363d'}`,
+          background: 'var(--card)',
+          border: `1.5px solid ${query.trim() ? 'var(--amber)' : 'var(--border)'}`,
           borderRadius: 14,
           padding: '14px 16px',
-          color: '#f0f2ff',
+          color: 'var(--text)',
           fontSize: 15,
           fontFamily: 'system-ui',
           resize: 'none',
@@ -244,19 +251,19 @@ export default function NavigatePage() {
         display: 'flex',
         gap: 8,
         flexWrap: 'wrap',
-        marginBottom: 16,
+        marginBottom: 20,
       }}>
-        {['Main train station', 'Airport', 'City centre', 'Hospital'].map((s, i) => (
+        {['Train station', 'Airport', 'City centre', 'Hospital'].map((s, i) => (
           <div
             key={i}
             onClick={() => setQuery(s)}
             style={{
-              background: '#161b22',
-              border: '1px solid #30363d',
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
               borderRadius: 20,
               padding: '6px 14px',
               fontSize: 13,
-              color: '#8b949e',
+              color: 'var(--muted)',
               cursor: 'pointer',
             }}
           >
@@ -273,22 +280,30 @@ export default function NavigatePage() {
           width: '100%',
           background: query.trim() && coordinates
             ? 'linear-gradient(135deg, #f59e0b, #f97316)'
-            : '#161b22',
-          border: `1.5px solid ${query.trim() && coordinates ? '#f59e0b' : '#30363d'}`,
+            : 'var(--card)',
+          border: `1.5px solid ${query.trim() && coordinates ? 'var(--amber)' : 'var(--border)'}`,
           borderRadius: 14,
           padding: '18px',
-          color: query.trim() && coordinates ? '#0d1117' : '#484f58',
+          color: query.trim() && coordinates ? '#0d1117' : 'var(--muted)',
           fontWeight: 700,
           fontSize: 16,
-          cursor: query.trim() && coordinates ? 'pointer' : 'default',
+          cursor: query.trim() && coordinates && !searching ? 'pointer' : 'default',
           transition: 'all 0.2s',
           boxShadow: query.trim() && coordinates
             ? '0 8px 32px rgba(245,158,11,0.25)'
             : 'none',
+          opacity: searching ? 0.7 : 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
         }}
       >
+        {searching && <div className="spinner" />}
         {searching ? 'Finding routes...' : 'Find my route →'}
       </button>
+
     </main>
-  )
+  </div>
+)
 }
