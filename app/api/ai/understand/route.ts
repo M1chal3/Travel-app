@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { understandIntent } from '../../../lib/ai/understand-intent'
-import { IntentRequest } from '../../../types/api/ai'
+import { understandIntent } from '../../../../lib/ai/understand-intent'
+import { IntentRequest } from '../../../../types/api/ai'
 
 export async function POST(request: NextRequest) {
   try {

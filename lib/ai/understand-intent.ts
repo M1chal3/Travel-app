@@ -1,4 +1,4 @@
-import { IntentRequest, IntentResponse } from '../../types/api/ai'
+import { IntentRequest, IntentResponse } from '../../../wayfar/types/api/ai'
 
 export async function understandIntent(
   request: IntentRequest
