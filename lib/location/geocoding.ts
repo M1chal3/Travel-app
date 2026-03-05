@@ -32,7 +32,7 @@ export async function geocode(query: string): Promise<Coordinates | null> {
 
     const [lng, lat] = features[0].geometry.coordinates
 
-    console.log('Photon coords:', { lat, lng })
+    
 
     return { lat, lng }
 

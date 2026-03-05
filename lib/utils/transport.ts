@@ -14,11 +14,12 @@ export function modeIcon(mode: TransportMode): string {
 }
 
 export function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`
   const mins = Math.round(seconds / 60)
   if (mins < 60) return `${mins} min`
   const hrs = Math.floor(mins / 60)
   const remaining = mins % 60
-  return `${hrs}h ${remaining}min`
+  return remaining > 0 ? `${hrs}h ${remaining}min` : `${hrs}h`
 }
 
 export function formatDistance(meters: number): string {

@@ -4,7 +4,9 @@ import Axios from 'axios'
 export async function humanizeSteps(steps: Step[]): Promise<Step[]> {
   
   const apiKey = process.env.GROQ_API_KEY
-  
+  if (steps.length === 1 && steps[0].type === 'taxi') {
+  return steps
+}
 
   if (!apiKey || apiKey === 'placeholder') {
     return steps

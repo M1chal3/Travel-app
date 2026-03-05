@@ -2,7 +2,6 @@ import axios from 'axios'
 import { Coordinates } from '../../types/core/location'
 import { RouteOption, Step } from '../../types/core/journey'
 
-// OSRM response types
 interface OsrmManeuver {
   type: string
   modifier?: string
@@ -32,13 +31,16 @@ interface OsrmResponse {
   code: string
 }
 
-export async function getRoutesFromNavitia(
+async function fetchOsrmRoute(
   origin: Coordinates,
-  destination: Coordinates
-): Promise<RouteOption[] | null> {
+  destination: Coordinates,
+  mode: 'foot' | 'bike' | 'car'
+): Promise<{ steps: Step[], duration: number, distance: number } | null> {
   try {
+    const profile = mode === 'foot' ? 'foot' : mode === 'bike' ? 'bike' : 'driving'
+    
     const response = await axios.get(
-      `http://router.project-osrm.org/route/v1/car/${origin.lng},${origin.lat};${destination.lng},${destination.lat}`,
+      `http://router.project-osrm.org/route/v1/${profile}/${origin.lng},${origin.lat};${destination.lng},${destination.lat}`,
       {
         params: {
           overview: 'full',
@@ -46,65 +48,114 @@ export async function getRoutesFromNavitia(
         },
       }
     )
-   
+
     const data = response.data as OsrmResponse
     
 
-    if (!data.routes || data.routes.length === 0) {
-      return null
-    }
+    if (!data.routes || data.routes.length === 0) return null
 
     const route = data.routes[0]
     const leg = route.legs[0]
+const distance = Math.round(leg.distance)
 
-    // Convert OSRM steps into our Step format
-    const steps: Step[] = leg.steps.map((s: OsrmStep, i: number) => ({
-      id: String(i),
-      type: 'walking' as const,
-      instruction: s.maneuver?.type === 'arrive'
-        ? 'You have arrived'
-        : formatOsrmInstruction(s),
-      detail: `${Math.round(s.distance)}m · ${Math.round(s.duration / 60)} min`,
-      durationSeconds: Math.round(s.duration),
-      distanceMeters: Math.round(s.distance),
-    }))
+// OSRM public server only supports driving
+// Calculate realistic duration based on mode
+let totalDuration: number
+if (mode === 'foot') {
+  totalDuration = Math.round(distance / 83 * 60)
+} else if (mode === 'bike') {
+  totalDuration = Math.round(distance / 250 * 60)
+} else {
+  totalDuration = Math.round(leg.duration)
+}
 
-    const totalDuration = Math.round(leg.duration)
-    const totalDistance = Math.round(leg.distance)
+const steps: Step[] = leg.steps.map((s: OsrmStep, i: number) => ({
+  id: String(i),
+  type: mode === 'foot' ? 'walking' : mode === 'bike' ? 'walking' : 'taxi',
+  instruction: s.maneuver?.type === 'arrive'
+    ? 'You have arrived'
+    : formatOsrmInstruction(s),
+  detail: `${Math.round(s.distance)}m`,
+  durationSeconds: mode === 'foot'
+    ? Math.round(s.distance / 83 * 60)
+    : mode === 'bike'
+    ? Math.round(s.distance / 250 * 60)
+    : Math.round(s.duration),
+  distanceMeters: Math.round(s.distance),
+} as Step))
 
-
-    
-    return [
-      {
-        type: 'easiest',
-        steps,
-        totalDurationSeconds: totalDuration,
-        totalPriceEUR: 0,
-        transferCount: 0,
-        provider: 'navitia',
-      },
-      {
-        type: 'fastest',
-        steps,
-        totalDurationSeconds: Math.round(totalDuration * 0.8),
-        totalPriceEUR: 12,
-        transferCount: 0,
-        provider: 'navitia',
-      },
-      {
-        type: 'cheapest',
-        steps,
-        totalDurationSeconds: totalDuration,
-        totalPriceEUR: 0,
-        transferCount: 0,
-        provider: 'navitia',
-      },
-    ]
+return {
+  steps,
+  duration: totalDuration,
+  distance,
+}
 
   } catch (error) {
-    console.error('OSRM error:', error)
+    console.error(`OSRM ${mode} error:`, error)
     return null
   }
+}
+
+export async function getRoutesFromNavitia(
+  origin: Coordinates,
+  destination: Coordinates
+): Promise<RouteOption[] | null> {
+
+  const walking = await fetchOsrmRoute(origin, destination, 'foot')
+
+  if (!walking) return null
+
+  // Calculate estimated taxi price — €1.5 base + €1.2 per km
+  const distanceKm = walking.distance / 1000
+  const taxiPrice = Math.round((1.5 + distanceKm * 1.2) * 10) / 10
+  const taxiDuration = Math.round(walking.duration * 0.25) // taxi ~4x faster than walking
+
+  const routes: RouteOption[] = [
+    {
+      type: 'easiest',
+      steps: walking.steps,
+      totalDurationSeconds: walking.duration,
+      totalPriceEUR: 0,
+      transferCount: 0,
+      provider: 'navitia',
+    },
+    {
+      type: 'fastest',
+      steps: [
+        {
+          id: '1',
+          type: 'taxi',
+          instruction: 'Take a taxi or Uber',
+          detail: `Estimated ${taxiDuration} min · door to door`,
+          durationSeconds: taxiDuration * 60,
+          distanceMeters: walking.distance,
+        }
+      ],
+      totalDurationSeconds: taxiDuration * 60,
+      totalPriceEUR: taxiPrice,
+      transferCount: 0,
+      provider: 'navitia',
+    },
+    {
+  type: 'cheapest',
+  steps: [
+    {
+      id: '1',
+      type: 'walking',
+      instruction: `Walk ${(walking.distance / 1000).toFixed(1)}km to your destination`,
+      detail: `Free · ${Math.round(walking.duration / 60)} min on foot`,
+      durationSeconds: walking.duration,
+      distanceMeters: walking.distance,
+    }
+  ],
+  totalDurationSeconds: walking.duration,
+  totalPriceEUR: 0,
+  transferCount: 0,
+  provider: 'navitia',
+},
+  ]
+
+  return routes
 }
 
 function formatOsrmInstruction(step: OsrmStep): string {
