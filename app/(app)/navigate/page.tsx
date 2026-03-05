@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useLocation } from '../../../hooks/useLocation'
 import { RouteOption, Journey } from '../../../types/core/journey'
-import { getRoutes } from '../../../lib/transport'
 import { RouteCard } from '../../../components/navigation/RouteCard'
 import { StepCard } from '../../../components/navigation/StepCard'
 
@@ -39,8 +38,18 @@ export default function NavigatePage() {
       const intent = await aiResponse.json()
 
       // Get routes to that destination
-      const foundRoutes = await getRoutes(coordinates, intent.destinationCoords)
-      setRoutes(foundRoutes)
+      // Get routes to that destination
+const routesResponse = await fetch('/api/routes/search', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    origin: coordinates,
+    destination: intent.destinationCoords,
+  }),
+})
+
+const foundRoutes = await routesResponse.json()
+setRoutes(foundRoutes)
       setScreen('routes')
 
     } catch (err) {

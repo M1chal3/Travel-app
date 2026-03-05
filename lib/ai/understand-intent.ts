@@ -66,8 +66,7 @@ Rules:
     const parsed = JSON.parse(raw)
 
  const realCoords = await geocode(parsed.destinationQuery)
- console.log('Nominatim coords:', realCoords)
-console.log('Destination query:', parsed.destinationQuery)
+ 
 
 return {
   destinationQuery: parsed.destinationQuery,

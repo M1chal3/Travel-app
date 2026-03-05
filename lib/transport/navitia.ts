@@ -38,7 +38,7 @@ export async function getRoutesFromNavitia(
 ): Promise<RouteOption[] | null> {
   try {
     const response = await axios.get(
-      `http://router.project-osrm.org/route/v1/foot/${origin.lng},${origin.lat};${destination.lng},${destination.lat}`,
+      `http://router.project-osrm.org/route/v1/car/${origin.lng},${origin.lat};${destination.lng},${destination.lat}`,
       {
         params: {
           overview: 'full',
@@ -48,9 +48,7 @@ export async function getRoutesFromNavitia(
     )
    
     const data = response.data as OsrmResponse
-    console.log('OSRM response code:', data.code)
-console.log('OSRM routes count:', data.routes?.length)
-console.log('OSRM routing from:', origin, 'to:', destination)
+    
 
     if (!data.routes || data.routes.length === 0) {
       return null

@@ -2,6 +2,8 @@ import { Coordinates } from '../../types/core/location'
 import { RouteOption } from '../../types/core/journey'
 import { getRoutesFromNavitia } from './navitia'
 import { getRoutesFromOpenRoute } from './openroute'
+import { humanizeSteps } from '../ai/humanize-steps'
+
 
 export async function getRoutes(
   origin: Coordinates,
@@ -11,18 +13,33 @@ export async function getRoutes(
   // Try Navitia first
   const navitiaRoutes = await getRoutesFromNavitia(origin, destination)
 
-  if (navitiaRoutes && navitiaRoutes.length > 0) {
-    console.log('Routes from Navitia')
-    return navitiaRoutes
-  }
+ if (navitiaRoutes && navitiaRoutes.length > 0) {
+  
+  const humanized = await Promise.all(
+    navitiaRoutes.map(async route => {
+      
+      return {
+        ...route,
+        steps: await humanizeSteps(route.steps)
+      }
+    })
+  )
+  return humanized
+}
 
   // Navitia failed or returned nothing — try OpenRouteService
   const openRoutes = await getRoutesFromOpenRoute(origin, destination)
 
   if (openRoutes && openRoutes.length > 0) {
-    console.log('Routes from OpenRouteService')
-    return openRoutes
-  }
+  console.log('Routes from OpenRouteService')
+  const humanized = await Promise.all(
+    openRoutes.map(async route => ({
+      ...route,
+      steps: await humanizeSteps(route.steps)
+    }))
+  )
+  return humanized
+}
 
   // Both failed — return placeholder so app still works
   console.warn('All transport providers failed — using placeholder')
